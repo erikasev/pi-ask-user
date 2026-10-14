@@ -99,6 +99,54 @@ describe("validateAskParams", () => {
         expect(result.error).toContain("recommended");
       }
     });
+
+    it("returns invalid when recommended is given without options", () => {
+      const result = validateAskParams({
+        question: "what",
+        reason: "why",
+        recommended: "A",
+      });
+      expect(result.status).toBe("invalid");
+      if (result.status === "invalid") {
+        expect(result.error).toContain("recommended");
+      }
+    });
+
+    it('returns invalid when options is a string instead of an array', () => {
+      const result = validateAskParams({
+        question: "what",
+        reason: "why",
+        options: "not-an-array" as unknown as string[],
+      });
+      expect(result.status).toBe("invalid");
+      if (result.status === "invalid") {
+        expect(result.error).toContain("options");
+      }
+    });
+
+    it("returns invalid when options contains a non-string element", () => {
+      const result = validateAskParams({
+        question: "what",
+        reason: "why",
+        options: ["A", 123] as unknown as string[],
+      });
+      expect(result.status).toBe("invalid");
+      if (result.status === "invalid") {
+        expect(result.error).toBeTruthy();
+      }
+    });
+
+    it("returns invalid when options contains an empty or whitespace-only label", () => {
+      const result = validateAskParams({
+        question: "what",
+        reason: "why",
+        options: ["Yes", "   "],
+      });
+      expect(result.status).toBe("invalid");
+      if (result.status === "invalid") {
+        expect(result.error).toBeTruthy();
+      }
+    });
   });
 
   describe("valid cases", () => {
@@ -144,6 +192,18 @@ describe("validateAskParams", () => {
           options: ["A", "B", "C"],
           recommended: "B",
         });
+      }
+    });
+
+    it('accepts options ["A", "B"] unchanged', () => {
+      const result = validateAskParams({
+        question: "what",
+        reason: "why",
+        options: ["A", "B"],
+      });
+      expect(result.status).toBe("ok");
+      if (result.status === "ok") {
+        expect(result.params.options).toEqual(["A", "B"]);
       }
     });
   });

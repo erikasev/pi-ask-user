@@ -201,3 +201,192 @@ describe("ask() without options", () => {
     expect(called).toBe(false);
   });
 });
+
+describe("reviewer proposed edge cases", () => {
+  it("no options + empty question, hasUI true → invalid, input never called", async () => {
+    let called = false;
+    const dialog = makeDialog({
+      input: async () => {
+        called = true;
+        return undefined;
+      },
+    });
+    const result = await ask(
+      { question: "", reason: "why" },
+      dialog
+    );
+    expect(result.status).toBe("invalid");
+    expect(called).toBe(false);
+  });
+
+  it("empty question + hasUI false, select/input throw → invalid, not unavailable", async () => {
+    const dialog = makeDialog({
+      hasUI: false,
+      select: async () => {
+        throw new Error("select should not be called");
+      },
+      input: async () => {
+        throw new Error("input should not be called");
+      },
+    });
+    const result = await ask(
+      { question: "", reason: "why" },
+      dialog
+    );
+    expect(result.status).toBe("invalid");
+    expect(result.error).toBeTruthy();
+  });
+
+  it('no-options input title is exactly "Q\\n\\nR"', async () => {
+    let capturedTitle = "";
+    const dialog = makeDialog({
+      input: async (title) => {
+        capturedTitle = title;
+        return "answer";
+      },
+    });
+    await ask({ question: "Q", reason: "R" }, dialog);
+    expect(capturedTitle).toBe("Q\n\nR");
+  });
+
+  it('options + recommended "Blue": select title is exactly the expected multiline string', async () => {
+    let capturedTitle = "";
+    const dialog = makeDialog({
+      select: async (title) => {
+        capturedTitle = title;
+        return "Red";
+      },
+    });
+    await ask(
+      {
+        question: "Which color?",
+        reason: "Cannot decide without you.",
+        options: ["Red", "Green", "Blue"],
+        recommended: "Blue",
+      },
+      dialog
+    );
+    expect(capturedTitle).toBe(
+      "Which color?\n\nCannot decide without you.\n\nRecommended: Blue"
+    );
+  });
+
+  it("after choosing Other, the title passed to input equals the select title", async () => {
+    let selectTitle = "";
+    let inputTitle = "";
+    const dialog = makeDialog({
+      select: async (title) => {
+        selectTitle = title;
+        return "Other (type your own answer)";
+      },
+      input: async (title) => {
+        inputTitle = title;
+        return "custom";
+      },
+    });
+    await ask(
+      {
+        question: "Q",
+        reason: "R",
+        options: ["A", "B"],
+      },
+      dialog
+    );
+    expect(inputTitle).toBe(selectTitle);
+  });
+
+  it('no options, input returns "" → empty', async () => {
+    const dialog = makeDialog({
+      input: async () => "",
+    });
+    const result = await ask(
+      { question: "Q", reason: "R" },
+      dialog
+    );
+    expect(result.status).toBe("empty");
+  });
+
+  it('options, Other, input returns "" → empty', async () => {
+    const dialog = makeDialog({
+      select: async () => "Other (type your own answer)",
+      input: async () => "",
+    });
+    const result = await ask(
+      { question: "Q", reason: "R", options: ["A", "B"] },
+      dialog
+    );
+    expect(result.status).toBe("empty");
+  });
+
+  it('options [Red, Green, Blue], recommended Blue, Other, input "Blue" → custom with answer "Blue"', async () => {
+    const dialog = makeDialog({
+      select: async () => "Other (type your own answer)",
+      input: async () => "Blue",
+    });
+    const result = await ask(
+      {
+        question: "Which color?",
+        reason: "Cannot decide without you.",
+        options: ["Red", "Green", "Blue"],
+        recommended: "Blue",
+      },
+      dialog
+    );
+    expect(result.status).toBe("custom");
+    expect(result.answer).toBe("Blue");
+  });
+
+  it("shape invariants: selected/custom have answer and no error", async () => {
+    const selectedResult = await ask(
+      { question: "Q", reason: "R", options: ["A", "B"] },
+      makeDialog({ select: async () => "A" })
+    );
+    expect(selectedResult.status).toBe("selected");
+    expect(selectedResult.answer).toBeDefined();
+    expect(selectedResult.error).toBeUndefined();
+
+    const customResult = await ask(
+      { question: "Q", reason: "R" },
+      makeDialog({ input: async () => "hello" })
+    );
+    expect(customResult.status).toBe("custom");
+    expect(customResult.answer).toBeDefined();
+    expect(customResult.error).toBeUndefined();
+  });
+
+  it("shape invariants: cancelled/empty/unavailable have neither answer nor error", async () => {
+    const cancelled = await ask(
+      { question: "Q", reason: "R" },
+      makeDialog({ input: async () => undefined })
+    );
+    expect(cancelled.status).toBe("cancelled");
+    expect(cancelled.answer).toBeUndefined();
+    expect(cancelled.error).toBeUndefined();
+
+    const empty = await ask(
+      { question: "Q", reason: "R" },
+      makeDialog({ input: async () => "   " })
+    );
+    expect(empty.status).toBe("empty");
+    expect(empty.answer).toBeUndefined();
+    expect(empty.error).toBeUndefined();
+
+    const unavailable = await ask(
+      { question: "Q", reason: "R" },
+      makeDialog({ hasUI: false })
+    );
+    expect(unavailable.status).toBe("unavailable");
+    expect(unavailable.answer).toBeUndefined();
+    expect(unavailable.error).toBeUndefined();
+  });
+
+  it("shape invariants: invalid has error and no answer", async () => {
+    const result = await ask(
+      { question: "", reason: "" },
+      makeDialog()
+    );
+    expect(result.status).toBe("invalid");
+    expect(result.error).toBeTruthy();
+    expect(result.answer).toBeUndefined();
+  });
+});
