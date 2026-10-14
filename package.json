@@ -1,0 +1,14 @@
+{
+  "name": "pi-ask-user",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.87.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
