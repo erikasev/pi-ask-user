@@ -56,7 +56,17 @@ export function validateAskParams(params: unknown): ValidationResult {
     if (!Array.isArray(p.options) || p.options.length < 2) {
       return { status: "invalid", error: "options must have at least 2 items" };
     }
-    const labels = p.options.map((o) => String(o));
+    for (let i = 0; i < p.options.length; i++) {
+      if (typeof p.options[i] !== "string") {
+        return { status: "invalid", error: `options[${i}] is not a string` };
+      }
+    }
+    const labels = p.options as string[];
+    for (let i = 0; i < labels.length; i++) {
+      if (labels[i].trim() === "") {
+        return { status: "invalid", error: `options[${i}] is empty or whitespace-only` };
+      }
+    }
     if (new Set(labels).size !== labels.length) {
       return { status: "invalid", error: "options contains duplicate labels" };
     }
