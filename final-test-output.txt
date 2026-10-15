@@ -1,0 +1,20 @@
+
+> pi-ask-user@0.0.1 test
+> vitest run
+
+
+ RUN  v2.1.9 /Users/erikaseverino/Developer/cs480/pi-ask-user
+
+ ✓ tests/ask.validation.test.ts (18 tests) 2ms
+ ✓ tests/ask.flow.test.ts (24 tests) 4ms
+ ✓ tests/index.test.ts (8 tests) 2ms
+
+ Test Files  3 passed (3)
+      Tests  50 passed (50)
+   Start at  21:15:08
+   Duration  969ms (transform 175ms, setup 0ms, collect 870ms, tests 9ms, environment 0ms, prepare 134ms)
+
+
+> pi-ask-user@0.0.1 typecheck
+> tsc --noEmit
+

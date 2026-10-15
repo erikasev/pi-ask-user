@@ -25,9 +25,10 @@ const askUserTool = defineTool({
   name: "ask_user",
   label: "Ask User",
   description:
-    "Ask the user a question when an important product or behavior choice is unresolved.",
+    "Ask the user a question when an important product or behavior choice is unresolved. When you need the user to decide something, call the ask_user tool. Do not ask clarifying questions in plain chat text.",
   promptSnippet: "ask_user — pause and ask the user an unresolved question",
   promptGuidelines: [
+    "When you need the user to decide something, call the ask_user tool. Do not ask clarifying questions in plain chat text.",
     "Ask with ask_user only when an important product or behavior choice is unresolved and the user has not decided or delegated it.",
     "If the user specified the behavior, proceed without asking.",
     'If the user explicitly delegates ("as you think best"), choose, proceed, and state your choice.',
