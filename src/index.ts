@@ -33,6 +33,7 @@ const askUserTool = defineTool({
     "If the user specified the behavior, proceed without asking.",
     'If the user explicitly delegates ("as you think best"), choose, proceed, and state your choice.',
     "Never ask about routine details like naming or formatting.",
+    "If you set recommended, copy one option label exactly, character for character.",
     "Ask one question at a time.",
     "If the result has no answer, do not invent one; tell the user which decision is still open.",
   ],

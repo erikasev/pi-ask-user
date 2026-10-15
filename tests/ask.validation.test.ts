@@ -96,7 +96,7 @@ describe("validateAskParams", () => {
       });
       expect(result.status).toBe("invalid");
       if (result.status === "invalid") {
-        expect(result.error).toContain("recommended");
+        expect(result.error).toBe('recommended "C" is not one of the options: "A", "B"');
       }
     });
 

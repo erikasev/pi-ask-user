@@ -79,7 +79,8 @@ export function validateAskParams(params: unknown): ValidationResult {
   if ("recommended" in p && p.recommended !== undefined) {
     const recommended = String(p.recommended);
     if (!result.options || !result.options.includes(recommended)) {
-      return { status: "invalid", error: "recommended must be one of the options" };
+      const optsList = result.options?.map((o) => `"${o}"`).join(", ") ?? "none";
+      return { status: "invalid", error: `recommended "${recommended}" is not one of the options: ${optsList}` };
     }
     result.recommended = recommended;
   }
